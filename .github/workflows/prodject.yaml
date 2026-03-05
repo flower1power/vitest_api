@@ -9,16 +9,6 @@ on:
         required: true
         type: environment
 
-      PROJECT:
-        description: 'Выбор проект для запуска'
-        required: false
-        default: 'smoke'
-        type: 'choice'
-        options:
-          - smoke
-          - regression
-          - all
-
       WORKERS:
         description: 'Выбор количество потоков'
         required: false
