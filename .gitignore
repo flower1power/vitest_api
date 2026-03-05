@@ -25,3 +25,4 @@ dist-ssr
 *.env
 allure-results
 test-results
+allure-report

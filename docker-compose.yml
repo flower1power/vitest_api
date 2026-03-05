@@ -20,7 +20,7 @@ services:
       CI_COMMIT_SHA: ${CI_COMMIT_SHA}
       CI_COMMIT_REF_NAME: ${CI_COMMIT_REF_NAME}
       GITLAB_USER_LOGIN: ${GITLAB_USER_LOGIN}
-    command: ['sh', '-c', 'vitest run --maxWorkers=$$WORKERS']
+    command: ['sh', '-c', 'npx vitest run --maxWorkers=$$WORKERS']
     tty: true
 
   report:

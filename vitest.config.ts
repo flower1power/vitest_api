@@ -26,8 +26,3 @@ export default defineConfig({
     fileParallelism: true, // параллельное выполнение файлов
   },
 });
-//['junit', { outputFile: 'test-results/junit.xml' }]
-//vitest run  2.65s user 0.53s system 148% cpu 2.145 total
-// dotenv -- vitest run  3.37s user 0.74s system 64% cpu 6.350 total
-// dotenv -- npx playwright test  3.96s user 0.70s system 178% cpu 2.615 total
-// dotenv -- npx playwright test  10.41s user 2.07s system 349% cpu 3.571 total
