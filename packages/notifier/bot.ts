@@ -82,7 +82,7 @@ class TelegramReporter implements Reporter {
       `▪️ Workers: ${process.env.WORKERS ?? '1'}`,
       '',
       '🔗 Ссылки:',
-      `📊 Отчет: https://api-ts-pw-ae815c.gitlab.io/`,
+      `📊 Отчет: https://flower1power.github.io/vitest_api/`,
     ];
 
     if (process.env.CI_PIPELINE_URL) {
