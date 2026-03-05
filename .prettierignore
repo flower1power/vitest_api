@@ -1,0 +1,16 @@
+# Git ignored
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.vscode/
+.idea/
+.env
+allure-report/
+allure-results/
+
+# Config files
+.gitlab-ci.yml
+README.md
+package-lock.json

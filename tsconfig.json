@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "Node16",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+
+    /* Bundler mode */
+    "moduleResolution": "node16",
+    "allowImportingTsExtensions": false,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@checkers/*": ["checkers/*"],
+      "@dm_api_account/*": ["clients/http/dm_api_account/*"],
+      "@mailhog_api/*": ["clients/http/mailhog_api/*"],
+      "@fixture/*": ["fixture/*"],
+      "@helpers/*": ["helpers/*"],
+      "@notifier/*": ["packages/notifier/*"],
+      "@rest_client/*": ["packages/rest_client/*"],
+      "@service/*": ["service/*"],
+      "@steps-flows/*": ["steps-flows/*"]
+    }
+  },
+  //"paths": {
+  //      "@/*": ["src/*"]
+  //    }
+  "exclude": ["node_modules", "dist", "out", "build", "coverage", "test-results", "allure-results", "allure-report", ".idea"]
+}

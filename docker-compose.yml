@@ -1,0 +1,34 @@
+services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/workspace
+      - /usr/workspace/node_modules
+    environment:
+      PROJECT: ${PROJECT:-all}
+      WORKERS: ${WORKERS:-4}
+      TELEGRAM_BOT_CHAT_ID: ${TELEGRAM_BOT_CHAT_ID}
+      TELEGRAM_BOT_ACCESS_TOKEN: ${TELEGRAM_BOT_ACCESS_TOKEN}
+      DEPLOYMENT_STATUS: ${DEPLOYMENT_STATUS:-}
+      REPORT_URL: ${REPORT_URL:-}
+      REPORT_ENV: ${REPORT_ENV:-}
+      GITHUB_ACTOR: ${GITHUB_ACTOR:-}
+      WORKFLOW_URL: ${WORKFLOW_URL:-}
+      CI_PIPELINE_URL: ${CI_PIPELINE_URL}
+      CI_COMMIT_SHA: ${CI_COMMIT_SHA}
+      CI_COMMIT_REF_NAME: ${CI_COMMIT_REF_NAME}
+      GITLAB_USER_LOGIN: ${GITLAB_USER_LOGIN}
+    command: ['sh', '-c', 'vitest run --maxWorkers=$$WORKERS']
+    tty: true
+
+  report:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/workspace
+      - /usr/workspace/node_modules
+    command: sh -c "ls -la && allure generate allure-results --clean -o allure-report"
+    working_dir: /usr/workspace

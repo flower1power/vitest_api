@@ -1,0 +1,125 @@
+name: API Tests
+run-name: Test ${{ github.event.inputs.ENV }} | ${{ github.event.inputs.PROJECT }} marker | ${{ github.event.inputs.WORKERS }} threads
+
+on:
+  workflow_dispatch:
+    inputs:
+      ENV:
+        description: 'Выбор env'
+        required: true
+        type: environment
+
+      PROJECT:
+        description: 'Выбор проект для запуска'
+        required: false
+        default: 'smoke'
+        type: 'choice'
+        options:
+          - smoke
+          - regression
+          - all
+
+      WORKERS:
+        description: 'Выбор количество потоков'
+        required: false
+        default: '1'
+        type: 'choice'
+        options:
+          - '1'
+          - '3'
+          - '5'
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    environment: ${{inputs.ENV}}
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout code page
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: ./.github/gh-pages
+
+      - name: Prepare Allure environment and history
+        run: |
+          rm -rf allure-results allure-report
+          mkdir -p allure-results/history
+          if [ -d "./.github/gh-pages/history" ]; then
+            cp -R ./.github/gh-pages/history/* allure-results/history/
+          fi
+          echo "Branch=${{ github.ref_name }}" > allure-results/environment.properties
+          echo "Commit=${{ github.sha }}" >> allure-results/environment.properties
+          echo "Environment=${{ inputs.ENV }}" >> allure-results/environment.properties
+          echo "Project=${{ inputs.PROJECT }}" >> allure-results/environment.properties
+          echo "Workers=${{ inputs.WORKERS }}" >> allure-results/environment.properties
+          echo "RunBy=${{ github.actor }}" >> allure-results/environment.properties
+          echo "RunID=${{ github.run_id }}" >> allure-results/environment.properties
+
+      - name: Run API tests via docker
+        env:
+          PROJECT: ${{inputs.PROJECT}}
+          WORKERS: ${{inputs.WORKERS}}
+          TELEGRAM_BOT_CHAT_ID: ${{secrets.TELEGRAM_BOT_CHAT_ID}}
+          TELEGRAM_BOT_ACCESS_TOKEN: ${{secrets.TELEGRAM_BOT_ACCESS_TOKEN}}
+        run: docker compose up tests
+
+      - name: Generate Allure-report
+        env:
+          STAGE: ${{ secrets.STAGE }}
+          CI_COMMIT_REF_NAME: ${{ github.ref_name }}√√
+          CI_COMMIT_SHORT_SHA: ${{ github.sha }}
+        run: docker compose up report
+
+      - name: Deploy to Github Pages
+        uses: JamesIves/github-pages-deploy-action@v4.6.9
+        with:
+          token: ${{ secrets.CI_TOKEN }}
+          branch: gh-pages
+          folder: allure-report
+          clean: false
+
+      - name: Push TG
+        if: success()
+        env:
+          TELEGRAM_BOT_CHAT_ID: ${{secrets.TELEGRAM_BOT_CHAT_ID}}
+          TELEGRAM_BOT_ACCESS_TOKEN: ${{secrets.TELEGRAM_BOT_ACCESS_TOKEN}}
+          DEPLOYMENT_STATUS: success
+          REPORT_URL: https://flower1power.github.io/API_TS_PW/
+          REPORT_ENV: ${{inputs.ENV}}
+          PROJECT: ${{inputs.PROJECT}}
+          WORKERS: ${{inputs.WORKERS}}
+          GITHUB_ACTOR: ${{github.actor}}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: docker compose run --rm tests npm run notify
+
+      - name: Push TG on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_CHAT_ID: ${{secrets.TELEGRAM_BOT_CHAT_ID}}
+          TELEGRAM_BOT_ACCESS_TOKEN: ${{secrets.TELEGRAM_BOT_ACCESS_TOKEN}}
+          DEPLOYMENT_STATUS: failed
+          REPORT_URL: https://flower1power.github.io/API_TS_PW/
+          REPORT_ENV: ${{inputs.ENV}}
+          PROJECT: ${{inputs.PROJECT}}
+          WORKERS: ${{inputs.WORKERS}}
+          GITHUB_ACTOR: ${{github.actor}}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: docker compose run --rm tests npm run notify
+
+      - name: Push TG on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_CHAT_ID: ${{secrets.TELEGRAM_BOT_CHAT_ID}}
+          TELEGRAM_BOT_ACCESS_TOKEN: ${{secrets.TELEGRAM_BOT_ACCESS_TOKEN}}
+          DEPLOYMENT_STATUS: failed
+          REPORT_URL: https://flower1power.github.io/API_TS_PW/
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: docker compose run --rm tests npm run notify
