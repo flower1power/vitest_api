@@ -27,6 +27,7 @@ jobs:
       contents: write
       pages: write
       id-token: write
+      checks: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,6 +61,14 @@ jobs:
           TELEGRAM_BOT_CHAT_ID: ${{secrets.TELEGRAM_BOT_CHAT_ID}}
           TELEGRAM_BOT_ACCESS_TOKEN: ${{secrets.TELEGRAM_BOT_ACCESS_TOKEN}}
         run: docker compose up tests
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Vitest Results
+          path: test-results/junit.xml
+          reporter: java-junit
 
       - name: Generate Allure-report
         env:
