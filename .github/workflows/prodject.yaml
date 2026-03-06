@@ -60,6 +60,10 @@ jobs:
           WORKERS: ${{inputs.WORKERS}}
           TELEGRAM_BOT_CHAT_ID: ${{secrets.TELEGRAM_BOT_CHAT_ID}}
           TELEGRAM_BOT_ACCESS_TOKEN: ${{secrets.TELEGRAM_BOT_ACCESS_TOKEN}}
+          DM_API_URL: ${{secrets.DM_API_URL}}
+          MAILHOG_URL: ${{secrets.MAILHOG_URL}}
+          AUTH_USER_LOGIN: ${{secrets.AUTH_USER_LOGIN}}
+          AUTH_USER_PASSWORD: ${{secrets.AUTH_USER_PASSWORD}}
         run: docker compose up tests
 
       - name: Publish Test Results
