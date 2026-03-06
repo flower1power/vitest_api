@@ -9,7 +9,7 @@ import {
 import { ApiDmAccount, ApiMailhog } from '@service/index.js';
 import { type ApiResponse } from '@rest_client/index.js';
 import { expect } from 'vitest';
-import { Step as step } from '@steps-flows/index.js';
+import { Retries, Step as step } from '@steps-flows/index.js';
 
 export class AccountHelpers {
   constructor(
@@ -100,7 +100,7 @@ export class AccountHelpers {
   }
 
   @step('Получение токена активации для пользователя по логину')
-  @retries(5)
+  @Retries(5)
   async getActivationTokenByLogin(login: string): Promise<string | undefined> {
     const response = await this.apiMailhog.mailhogApi.getApiV2Message();
     expect(response.status).toBe(200);
@@ -118,7 +118,7 @@ export class AccountHelpers {
   }
 
   @step('Получение токена сброса пароля для пользователя по логину')
-  @retries(5)
+  @Retries(5)
   async getResetPasswordTokenByLogin(login: string): Promise<string | undefined> {
     const response = await this.apiMailhog.mailhogApi.getApiV2Message();
     expect(response.status).toBe(200);
@@ -144,7 +144,7 @@ export class AccountHelpers {
     oldPassword: string,
     newPassword: string,
     validateResponse = true,
-  ): Promise<ApiResponse | UserEnvelopeDTO> {
+  ): Promise<ApiResponse<UserEnvelopeDTO> | UserEnvelopeDTO> {
     const loginData: ResetPasswordDTO = { login: login, email: email };
 
     await this.apiDmAccount.accountApi.postV1AccountPassword(loginData, validateResponse);
@@ -160,14 +160,14 @@ export class AccountHelpers {
       newPassword: newPassword,
     };
 
-    let response = await this.apiDmAccount.accountApi.putV1AccountChangePassword(changePasswordData, validateResponse);
+    const response = await this.apiDmAccount.accountApi.putV1AccountChangePassword(changePasswordData, validateResponse);
 
     if (validateResponse) return response as UserEnvelopeDTO;
 
-    response = response as ApiResponse;
-    expect(response.status).toBe(200);
+    const apiResponse = response as ApiResponse<UserEnvelopeDTO>;
+    expect(apiResponse.status).toBe(200);
 
-    return response;
+    return apiResponse;
   }
 
   @step('Изменение email адреса пользователя')
@@ -176,17 +176,17 @@ export class AccountHelpers {
     password: string,
     newEmail: string,
     validateResponse = true,
-  ): Promise<ApiResponse | UserEnvelopeDTO> {
+  ): Promise<ApiResponse<UserEnvelopeDTO> | UserEnvelopeDTO> {
     const changeEmailData: ChangeEmailDTO = { login: login, password: password, email: newEmail };
 
-    let response = await this.apiDmAccount.accountApi.putV1AccountChangeEmail(changeEmailData, validateResponse);
+    const response = await this.apiDmAccount.accountApi.putV1AccountChangeEmail(changeEmailData, validateResponse);
 
     if (validateResponse) return response as UserEnvelopeDTO;
 
-    response = response as ApiResponse;
-    expect(response.status).toBe(200);
+    const apiResponse = response as ApiResponse<UserEnvelopeDTO>;
+    expect(apiResponse.status).toBe(200);
 
-    return response;
+    return apiResponse;
   }
 
   @step('Выход пользователя из системы на текущем устройстве')
@@ -210,36 +210,14 @@ export class AccountHelpers {
   }
 
   @step('Активация зарегистрированного пользователя по токену')
-  async activateUser(token: string, validateResponse = true): Promise<ApiResponse | UserEnvelopeDTO> {
-    let response = await this.apiDmAccount.accountApi.putV1AccountToken(token, validateResponse);
+  async activateUser(token: string, validateResponse = true): Promise<ApiResponse<UserEnvelopeDTO> | UserEnvelopeDTO> {
+    const response = await this.apiDmAccount.accountApi.putV1AccountToken(token, validateResponse);
 
-    if (validateResponse) return response as ApiResponse;
+    if (validateResponse) return response as UserEnvelopeDTO;
 
-    response = response as ApiResponse;
-    expect(response.status).toBe(200);
+    const apiResponse = response as ApiResponse<UserEnvelopeDTO>;
+    expect(apiResponse.status).toBe(200);
 
-    return response;
+    return apiResponse;
   }
-}
-
-function retries(num: number, delayMs = 1000) {
-  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor): void {
-    const originalMethod = descriptor.value;
-
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    descriptor.value = async function (...args: any[]) {
-      for (let attempt = 1; attempt <= num; attempt++) {
-        console.log(`Попытка ${attempt} из ${num}`);
-        const result = await originalMethod.apply(this, args);
-
-        if (result !== undefined && result !== null) return result;
-
-        if (attempt === num) return result;
-
-        await new Promise((r) => setTimeout(r, delayMs));
-      }
-
-      return undefined;
-    };
-  };
 }

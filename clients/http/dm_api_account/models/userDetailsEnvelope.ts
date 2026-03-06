@@ -1,8 +1,7 @@
 import { z } from 'zod';
-import { UserRole } from './enums/userRole.js';
-import { ColorSchema, RatingSchema } from './enums/index.js';
+import { ColorSchemaZod, RatingSchema, UserRoleZod } from './enums/index.js';
 
-const PagingSettingsSchema = z
+export const PagingSettingsSchema = z
   .object({
     postsPerPage: z.number().int(),
     commentsPerPage: z.number().int(),
@@ -12,18 +11,22 @@ const PagingSettingsSchema = z
   })
   .strict();
 
-const UserSettingsSchema = z
+export type PagingSettingsDTO = z.infer<typeof PagingSettingsSchema>;
+
+export const UserSettingsSchema = z
   .object({
-    colorSchema: z.enum(Object.values(ColorSchema) as [string, ...string[]]),
+    colorSchema: ColorSchemaZod,
     nannyGreetingsMessage: z.string().optional(),
     paging: PagingSettingsSchema,
   })
   .strict();
 
-const UserDetailsSchema = z
+export type UserSettingsDTO = z.infer<typeof UserSettingsSchema>;
+
+export const UserDetailsSchema = z
   .object({
     login: z.string().optional(),
-    roles: z.array(z.enum(Object.values(UserRole) as [string, ...string[]])),
+    roles: z.array(UserRoleZod),
     mediumPictureUrl: z.string().optional(),
     smallPictureUrl: z.string().optional(),
     status: z.string().optional(),
@@ -39,6 +42,8 @@ const UserDetailsSchema = z
     settings: UserSettingsSchema,
   })
   .strict();
+
+export type UserDetailsDTO = z.infer<typeof UserDetailsSchema>;
 
 export const UserDetailsEnvelopeSchema = z
   .object({

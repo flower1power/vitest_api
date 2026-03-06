@@ -35,9 +35,9 @@ export class ApiResponse<T = unknown> {
     await expect(body).checkErrorBody(this.getMetaData(), expectedErrorMessage);
   }
 
-  async assertSuccessResponse(statusCode: number, fn: (res: ApiResponse) => void | Promise<void>): Promise<void> {
+  async assertSuccessResponse(statusCode: number, fn: (res: ApiResponse<T>) => void | Promise<void>): Promise<void> {
     await this.toHaveStatusCode(statusCode);
-    await fn(this.body as ApiResponse);
+    await fn(this);
   }
 
   async checkSchema<U>(expected: { statusCode?: number; schema?: z.ZodSchema<U>; errorMessage?: string }): Promise<void> {

@@ -1,7 +1,6 @@
 import { describe, parameter, subSuite, test } from '@fixture/index.js';
 import { faker } from '@faker-js/faker';
 import { PostV1Account } from '@checkers/index.js';
-import type { UserEnvelopeDTO } from '@dm_api_account/models/index.js';
 
 const now = new Date();
 const data = now.toLocaleString('ru-RU', { hour12: false }).replace(/[-:T]/g, '_').replace(' ', '_');
@@ -30,7 +29,7 @@ describe('Тесты на проверку метода POST v1/account', () => 
 
     await accountHelper.registerAndActivationNewUser(prepareUser.login, prepareUser.password, prepareUser.email, true);
     const response = await accountHelper.userLogin(prepareUser.login, prepareUser.password, true, true);
-    await PostV1Account.checkValues<UserEnvelopeDTO>(prepareUser.login, response);
+    await PostV1Account.checkValues(prepareUser.login, response);
   });
 
   negativeTestCase.forEach(({ login, password, email }, index) => {

@@ -1,7 +1,14 @@
 import { randomUUID } from 'crypto';
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type Method as HttpMethod } from 'axios';
+import axios, {
+  type AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  type Method as HttpMethod,
+} from 'axios';
 import { Configuration } from './configuration.js';
 import { ApiResponse } from './api_response.js';
+import { ConnectionError, DnsError, NetworkError, TimeoutError } from './errors.js';
 
 export interface RequestOptions {
   params?: Record<string, string | number | boolean>;
@@ -73,25 +80,48 @@ export class RestClient {
 
     const curl = this._toCurl(method, fullUrl, requestHeaders, reqBody);
 
-    if (this.disableLog) {
-      console.log(curl);
-
-      const response = await this.axiosInstance.request<T>(axiosConfig);
-
-      return this._createApiResponse<T>(response, reqBody, curl);
+    if (!this.disableLog) {
+      this._logRequest(eventId, method, fullUrl, { ...options, headers: requestHeaders });
     }
-
-    this._logRequest(eventId, method, fullUrl, { ...options, headers: requestHeaders });
 
     console.log(curl);
 
-    const response = await this.axiosInstance.request<T>(axiosConfig);
+    try {
+      const response = await this.axiosInstance.request<T>(axiosConfig);
 
-    const apiResponse = this._createApiResponse<T>(response, reqBody, curl);
+      const apiResponse = this._createApiResponse<T>(response, reqBody, curl);
 
-    this._logResponse(eventId, apiResponse);
+      if (!this.disableLog) {
+        this._logResponse(eventId, apiResponse);
+      }
 
-    return apiResponse;
+      return apiResponse;
+    } catch (error) {
+      throw this._handleAxiosError(error as AxiosError, method, fullUrl, curl, options.timeout);
+    }
+  }
+
+  private _handleAxiosError(error: AxiosError, method: string, url: string, curl: string, timeout?: number): Error {
+    const code = error.code;
+
+    if (code === 'ECONNABORTED' || code === 'ETIMEDOUT') {
+      return new TimeoutError(url, method, curl, timeout, error);
+    }
+
+    if (code === 'ECONNREFUSED') {
+      return new ConnectionError(url, method, curl, error);
+    }
+
+    if (code === 'ENOTFOUND') {
+      const hostname = new URL(url).hostname;
+      return new DnsError(url, method, curl, hostname, error);
+    }
+
+    if (code === 'ECONNRESET' || code === 'EPIPE' || code === 'ERR_NETWORK') {
+      return new NetworkError(url, method, curl, error);
+    }
+
+    return new NetworkError(url, method, curl, error);
   }
 
   private _createApiResponse<T>(response: AxiosResponse<T>, reqBody: unknown, curl: string): ApiResponse<T> {

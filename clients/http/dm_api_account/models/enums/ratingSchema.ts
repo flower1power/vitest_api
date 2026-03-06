@@ -7,3 +7,5 @@ export const RatingSchema = z
     quantity: z.number().int(),
   })
   .strict();
+
+export type RatingDTO = z.infer<typeof RatingSchema>;

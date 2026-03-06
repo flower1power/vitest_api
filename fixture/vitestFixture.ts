@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { ApiDmAccount, ApiMailhog } from '@service/index.js';
 import type { ApiResponse } from '@rest_client/index.js';
 import { Configuration } from '@rest_client/index.js';
+import { config } from '@config/index.js';
 
 type MyFixtureType = {
   mailhogClient: ApiMailhog;
@@ -18,16 +19,16 @@ type MyFixtureType = {
 export const test = base.extend<MyFixtureType>({
   // eslint-disable-next-line no-empty-pattern
   mailhogClient: async ({}, use) => {
-    const config = new Configuration('http://185.185.143.231:5025', true);
-    const client = new ApiMailhog(config);
+    const mailhogConfig = new Configuration(config.mailhog.url, true);
+    const client = new ApiMailhog(mailhogConfig);
 
     await use(client);
   },
 
   // eslint-disable-next-line no-empty-pattern
   accountClient: async ({}, use) => {
-    const config = new Configuration('http://185.185.143.231:5051');
-    const client = new ApiDmAccount(config);
+    const dmApiConfig = new Configuration(config.dmApi.url);
+    const client = new ApiDmAccount(dmApiConfig);
 
     await use(client);
   },
@@ -39,12 +40,16 @@ export const test = base.extend<MyFixtureType>({
   },
 
   authAccountHelper: async ({ mailhogClient }, use) => {
-    const config = new Configuration('http://185.185.143.231:5051');
-    const accountClient = new ApiDmAccount(config);
+    const dmApiConfig = new Configuration(config.dmApi.url);
+    const accountClient = new ApiDmAccount(dmApiConfig);
     const accountHelper = new AccountHelpers(accountClient, mailhogClient);
 
-    const login = 'Tyreek6609_02_2026__18_59_16';
-    const password = 'jiqajuhuha';
+    const login = process.env.AUTH_USER_LOGIN;
+    const password = process.env.AUTH_USER_PASSWORD;
+
+    if (!login || !password) {
+      throw new Error('AUTH_USER_LOGIN и AUTH_USER_PASSWORD должны быть заданы в .env');
+    }
 
     await accountHelper.authUser(login, password);
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ResetPasswordSchema = z
+export const ResetPasswordSchema = z
   .object({
     login: z.string(),
     email: z.email(),

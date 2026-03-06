@@ -25,12 +25,13 @@
     "baseUrl": ".",
     "paths": {
       "@checkers/*": ["checkers/*"],
+      "@config/*": ["config/*"],
       "@dm_api_account/*": ["clients/http/dm_api_account/*"],
       "@mailhog_api/*": ["clients/http/mailhog_api/*"],
       "@fixture/*": ["fixture/*"],
       "@helpers/*": ["helpers/*"],
-      "@notifier/*": ["packages/notifier/*"],
-      "@rest_client/*": ["packages/rest_client/*"],
+      "@notifier/*": ["lib/notifier/*"],
+      "@rest_client/*": ["lib/rest_client/*"],
       "@service/*": ["service/*"],
       "@steps-flows/*": ["steps-flows/*"]
     }

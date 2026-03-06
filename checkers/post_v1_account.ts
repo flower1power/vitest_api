@@ -1,19 +1,14 @@
-import { ApiResponse } from '@rest_client/index.js';
+import type { ApiResponse } from '@rest_client/index.js';
 import { expect } from 'vitest';
 import { Step as step } from '@steps-flows/index.js';
 import type { UserEnvelopeDTO } from '@dm_api_account/models/index.js';
-import { isApiResponse } from '@checkers/http_checkers.js';
+import { extractBody } from '@checkers/http_checkers.js';
 
 export class PostV1Account {
   @step('Проверка ответа POST v1/account')
-  static async checkValues<T extends UserEnvelopeDTO | ApiResponse>(login: string, data: T): Promise<void> {
-    let user;
-
-    if (isApiResponse(data)) {
-      user = (data as any).resource;
-    } else {
-      user = data.resource;
-    }
+  static async checkValues(login: string, data: UserEnvelopeDTO | ApiResponse<UserEnvelopeDTO>): Promise<void> {
+    const envelope = extractBody(data);
+    const user = envelope.resource;
 
     const today = new Date().toISOString().slice(0, 10);
     const registration = user.registration instanceof Date ? user.registration.toISOString() : String(user.registration);

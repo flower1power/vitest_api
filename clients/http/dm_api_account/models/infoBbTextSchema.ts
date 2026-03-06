@@ -1,9 +1,11 @@
 import { z } from 'zod';
-import { DbParseMode } from './enums/index.js';
+import { DbParseModeZod } from './enums/index.js';
 
 export const InfoBbTextSchema = z
   .object({
     value: z.string().optional(),
-    parseMode: z.enum(Object.values(DbParseMode) as [string, ...string[]]),
+    parseMode: DbParseModeZod,
   })
   .strict();
+
+export type InfoBbTextDTO = z.infer<typeof InfoBbTextSchema>;

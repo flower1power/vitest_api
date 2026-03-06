@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { RatingSchema, UserRole } from './enums/index.js';
+import { RatingSchema, UserRoleZod } from './enums/index.js';
 
-const UserSchema = z
+export const UserSchema = z
   .object({
     login: z.string().optional(),
-    roles: z.array(z.enum(Object.values(UserRole) as [string, ...string[]])),
+    roles: z.array(UserRoleZod),
     mediumPictureUrl: z.string().optional(),
     smallPictureUrl: z.string().optional(),
     status: z.string().optional(),
@@ -15,6 +15,8 @@ const UserSchema = z
     registration: z.coerce.date().optional(),
   })
   .strict();
+
+export type UserDTO = z.infer<typeof UserSchema>;
 
 export const UserEnvelopeSchema = z.object({
   resource: UserSchema,

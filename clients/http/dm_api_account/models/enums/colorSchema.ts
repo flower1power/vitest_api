@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export enum ColorSchema {
   MODERN = 'Modern',
   PALE = 'Pale',
@@ -5,3 +7,5 @@ export enum ColorSchema {
   CLASSIC_PALE = 'ClassicPale',
   NIGHT = 'Night',
 }
+
+export const ColorSchemaZod = z.nativeEnum(ColorSchema);

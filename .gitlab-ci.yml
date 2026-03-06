@@ -1,19 +1,25 @@
+spec:
+  inputs:
+    ENV:
+      type: string
+      description: 'Выбор env'
+      options:
+        - dev
+      default: dev
+    WORKERS:
+      type: number
+      description: 'Выбор количество потоков'
+      options:
+        - 1
+        - 3
+        - 5
+      default: 1
+---
+
 stages:
   - test
   - report
   - deploy
-
-variables:
-  ENV:
-    description: "Выбор env"
-    value: "dev"
-  WORKERS:
-    description: "Выбор количество потоков"
-    value: "1"
-    options:
-      - "1"
-      - "3"
-      - "5"
 
 workflow:
   name: "Test $ENV | $WORKERS threads"

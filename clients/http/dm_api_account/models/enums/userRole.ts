@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export enum UserRole {
   GUEST = 'Guest',
   PLAYER = 'Player',
@@ -6,3 +8,5 @@ export enum UserRole {
   REGULAR_MODERATOR = 'RegularModerator',
   SENIOR_MODERATOR = 'SeniorModerator',
 }
+
+export const UserRoleZod = z.nativeEnum(UserRole);

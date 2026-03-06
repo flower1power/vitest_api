@@ -1,50 +1,46 @@
 import { type LoginCredentialsDTO, type UserEnvelopeDTO, UserEnvelopeSchema } from '../models/index.js';
 import { Step as step } from '@steps-flows/index.js';
-import type { ApiResponse } from '@rest_client/index.js';
-import { type RequestOptions, RestClient } from '@rest_client/index.js';
+import type { ApiResponse, RequestOptions } from '@rest_client/index.js';
+import { DmApiBase } from './base_api.js';
 
-export class LoginApi extends RestClient {
+export class LoginApi extends DmApiBase {
+  async postV1AccountLogin(
+    jsonData: LoginCredentialsDTO,
+    validateResponse: true,
+    options?: RequestOptions,
+  ): Promise<UserEnvelopeDTO>;
+  async postV1AccountLogin(
+    jsonData: LoginCredentialsDTO,
+    validateResponse: false,
+    options?: RequestOptions,
+  ): Promise<ApiResponse<UserEnvelopeDTO>>;
+  async postV1AccountLogin(
+    jsonData: LoginCredentialsDTO,
+    validateResponse: boolean,
+    options?: RequestOptions,
+  ): Promise<ApiResponse<UserEnvelopeDTO> | UserEnvelopeDTO>;
   @step('Аутентификация пользователя')
   async postV1AccountLogin(
     jsonData: LoginCredentialsDTO,
     validateResponse = true,
     options?: RequestOptions,
-  ): Promise<ApiResponse | UserEnvelopeDTO> {
-    const response = await this.post(`/v1/account/login`, {
+  ): Promise<ApiResponse<UserEnvelopeDTO> | UserEnvelopeDTO> {
+    const response = await this.post<UserEnvelopeDTO>(`${DmApiBase.BASE_PATH}/login`, {
       data: jsonData,
       headers: { ...options?.headers },
       ...options,
     });
 
-    if (validateResponse) {
-      await response.toHaveStatusCode(200);
-      return response.toMatchSchema(UserEnvelopeSchema);
-    }
-
-    return response;
+    return this.parseResponseWithStatus<UserEnvelopeDTO>(response, UserEnvelopeSchema, validateResponse, 200);
   }
 
-  /**
-   * Выход пользователя из системы на текущем устройстве.
-   * Требует предварительной авторизации пользователя
-   * (токен должен быть установлен в заголовках сессии)
-   * @param {RequestOptions} options - Параметры POST запроса
-   * @returns {Promise<ApiResponse>} Ответ сервера
-   */
   @step('Выход пользователя из системы на текущем устройстве')
   async deleteV1AccountLogin(options?: RequestOptions): Promise<ApiResponse> {
-    return this.delete('/v1/account/login', { ...options });
+    return this.delete(`${DmApiBase.BASE_PATH}/login`, { ...options });
   }
 
-  /**
-   * Выход пользователя из системы на всех устройствах.
-   * Требует предварительной авторизации пользователя
-   * (токен должен быть установлен в заголовках сессии)
-   * @param {RequestOptions} options - Параметры DELETE запроса
-   * @returns {Promise<ApiResponse>} Ответ сервера
-   */
   @step('Выход пользователя из системы на всех устройствах')
   async deleteV1AccountLoginAll(options?: RequestOptions): Promise<ApiResponse> {
-    return this.delete('/v1/account/login/all', { ...options });
+    return this.delete(`${DmApiBase.BASE_PATH}/login/all`, { ...options });
   }
 }
