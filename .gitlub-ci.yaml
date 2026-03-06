@@ -1,0 +1,91 @@
+stages:
+  - test
+  - report
+  - deploy
+
+variables:
+  ENV:
+    description: "Выбор env"
+    value: "dev"
+  WORKERS:
+    description: "Выбор количество потоков"
+    value: "1"
+    options:
+      - "1"
+      - "3"
+      - "5"
+
+workflow:
+  name: "Test $ENV | $WORKERS threads"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always
+    - when: never
+
+api-tests:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache docker-compose
+    - rm -rf allure-results allure-report
+    - mkdir -p allure-results/history
+    - |
+      if [ -d "public/history" ]; then
+        cp -R public/history/* allure-results/history/
+      fi
+    - |
+      echo "Branch=$CI_COMMIT_REF_NAME" > allure-results/environment.properties
+      echo "Commit=$CI_COMMIT_SHA" >> allure-results/environment.properties
+      echo "Environment=$ENV" >> allure-results/environment.properties
+      echo "Workers=$WORKERS" >> allure-results/environment.properties
+      echo "RunBy=$GITLAB_USER_LOGIN" >> allure-results/environment.properties
+      echo "PipelineID=$CI_PIPELINE_ID" >> allure-results/environment.properties
+  script:
+    - docker-compose up tests
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+      - test-results/
+    reports:
+      junit: test-results/junit.xml
+    expire_in: 7 days
+
+generate-report:
+  stage: report
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  needs:
+    - job: api-tests
+      artifacts: true
+  before_script:
+    - apk add --no-cache docker-compose
+  script:
+    - docker-compose up report
+  artifacts:
+    when: always
+    paths:
+      - allure-report/
+    expire_in: 7 days
+
+pages:
+  stage: deploy
+  needs:
+    - job: generate-report
+      artifacts: true
+  script:
+    - mkdir -p public
+    - cp -R allure-report/* public/
+  artifacts:
+    paths:
+      - public
+  environment:
+    name: production
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/$CI_PROJECT_NAME
