@@ -24,5 +24,6 @@ export default defineConfig({
     pool: 'forks', // 'forks' | 'threads' | 'vmThreads'
     maxWorkers: 12, // максимум воркеров (число или процент '50%')
     fileParallelism: true, // параллельное выполнение файлов
+    exclude: ['**/node_modules/**', '**/.github/**'],
   },
 });
