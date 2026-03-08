@@ -17,14 +17,17 @@ export default defineConfig({
       '@steps-flows': resolve(__dirname, 'steps-flows'),
     },
   },
+  ssr: {
+    noExternal: ['zod'],
+  },
   test: {
     reporters: ['default', 'allure-vitest/reporter', new TelegramReporter(), ['junit', { outputFile: 'test-results/junit.xml' }]],
     setupFiles: ['allure-vitest/setup'],
     testTimeout: 60000,
     hookTimeout: 30000,
-    pool: 'forks', // 'forks' | 'threads' | 'vmThreads'
-    maxWorkers: 12, // максимум воркеров (число или процент '50%')
-    fileParallelism: true, // параллельное выполнение файлов
+    pool: 'forks',
+    maxWorkers: 12,
+    fileParallelism: true,
     exclude: ['**/node_modules/**', '**/.github/**'],
   },
 });
