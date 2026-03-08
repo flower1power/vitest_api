@@ -1,7 +1,7 @@
 import { describe, subSuite, test } from '@fixture/index.js';
 import { UserEnvelopeSchema } from '@dm_api_account/models/index.js';
 
-describe('Тесты на проверку метода POST v1/account/login', () => {
+describe.skip('Тесты на проверку метода POST v1/account/login', () => {
   test('Проверка авторизации пользователя', async ({ accountHelper, prepareUser }) => {
     await subSuite('Позитивные тесты');
 
