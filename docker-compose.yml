@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: tests
     volumes:
       - ./:/usr/workspace
       - /usr/workspace/node_modules
@@ -32,7 +31,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: report
     volumes:
       - ./:/usr/workspace
       - /usr/workspace/node_modules
